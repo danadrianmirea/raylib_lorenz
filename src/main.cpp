@@ -169,7 +169,7 @@ public:
             camera.target = Vector3Add(camera.target, Vector3Scale(right, CAMERA_MOVE_SPEED));
         }
         
-        // Up/down (Q/E or PAGEUP/PAGEDOWN)
+        // Up/down (SPACE/C or PAGEUP/PAGEDOWN)
         if (IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_PAGE_UP)) {
             camera.position = Vector3Add(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
             camera.target = Vector3Add(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
