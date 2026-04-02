@@ -13,16 +13,19 @@ const float RHO = 28.0f;
 const float BETA = 8.0f / 3.0f;
 
 // Simulation parameters
-const float DT = 0.01f;             // Time step for integration
-const int TRAIL_LENGTH = 500;       // Number of points in each particle's trail
-const int PARTICLE_COUNT = 5;       // Number of particles
-const float PARTICLE_RADIUS = 2.0f; // Visual size of particles
-const float SCALE = 10.0f;          // Scale factor for visualization
+const float DT = 0.01f;                 // Time step for integration
+const int TRAIL_LENGTH = 100;           // Number of points in each particle's trail
+const int PARTICLE_COUNT = 100;         // Number of particles
+const float PARTICLE_RADIUS = 0.5f;     // Visual size of particles
+const float SCALE = 10.0f;              // Scale factor for visualization
 
 // Camera control parameters
 const float CAMERA_MOVE_SPEED = 0.5f;
 const float CAMERA_ZOOM_SPEED = 2.0f;
 const float CAMERA_ROTATION_SPEED = 0.1f;
+
+// Lorenz attractor center (approximate center of the butterfly attractor)
+const Vector3 ATTRACTOR_CENTER = { 0.0f, 0.0f, 25.0f };
 
 // Colors for particles
 const Color PARTICLE_COLORS[] = {
@@ -97,9 +100,13 @@ private:
     
 public:
     LorenzSimulation() : time(0) {
-        // Initialize camera
-        camera.position = (Vector3){ 50.0f, 50.0f, 50.0f };
-        camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+        // Initialize camera to focus on attractor center
+        camera.target = ATTRACTOR_CENTER;
+        camera.position = (Vector3){ 
+            ATTRACTOR_CENTER.x + 50.0f, 
+            ATTRACTOR_CENTER.y + 50.0f, 
+            ATTRACTOR_CENTER.z + 50.0f 
+        };
         camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
         camera.fovy = 45.0f;
         camera.projection = CAMERA_PERSPECTIVE;
@@ -174,8 +181,12 @@ public:
         
         // Reset camera view (R key)
         if (IsKeyPressed(KEY_R)) {
-            camera.position = (Vector3){ 50.0f, 50.0f, 50.0f };
-            camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+            camera.target = ATTRACTOR_CENTER;
+            camera.position = (Vector3){ 
+                ATTRACTOR_CENTER.x + 50.0f, 
+                ATTRACTOR_CENTER.y + 50.0f, 
+                ATTRACTOR_CENTER.z + 50.0f 
+            };
             camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
         }
     }
@@ -187,9 +198,9 @@ public:
         BeginMode3D(camera);
         
         // Draw coordinate axes for reference
-        DrawLine3D((Vector3){-50, 0, 0}, (Vector3){50, 0, 0}, RED);   // X-axis
-        DrawLine3D((Vector3){0, -50, 0}, (Vector3){0, 50, 0}, GREEN); // Y-axis
-        DrawLine3D((Vector3){0, 0, -50}, (Vector3){0, 0, 50}, BLUE);  // Z-axis
+        //DrawLine3D((Vector3){-50, 0, 0}, (Vector3){50, 0, 0}, RED);   // X-axis
+        //DrawLine3D((Vector3){0, -50, 0}, (Vector3){0, 50, 0}, GREEN); // Y-axis
+        //DrawLine3D((Vector3){0, 0, -50}, (Vector3){0, 0, 50}, BLUE);  // Z-axis
         
         // Draw particles
         for (const auto& particle : particles) {
