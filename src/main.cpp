@@ -97,9 +97,12 @@ private:
     std::vector<Particle> particles;
     Camera3D camera;
     float time;
+    bool freelookEnabled;
+    float cameraYawRad;
+    float cameraPitchRad;
     
 public:
-    LorenzSimulation() : time(0) {
+    LorenzSimulation() : time(0), freelookEnabled(false), cameraYawRad(0.0f), cameraPitchRad(0.0f) {
         // Initialize camera to focus on attractor center
         camera.target = ATTRACTOR_CENTER;
         camera.position = (Vector3){ 
@@ -110,6 +113,11 @@ public:
         camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
         camera.fovy = 45.0f;
         camera.projection = CAMERA_PERSPECTIVE;
+
+        // Initialize yaw/pitch from current camera direction (used for freelook)
+        Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+        cameraYawRad = atan2f(forward.x, forward.z);
+        cameraPitchRad = asinf(Clamp(forward.y, -1.0f, 1.0f));
         
         // Create particles with different starting positions
         particles.reserve(PARTICLE_COUNT);
@@ -135,6 +143,46 @@ public:
     }
     
     void handleCameraInput() {
+        // Mouse freelook (RMB): FPS-style yaw/pitch while keeping keyboard movement
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            freelookEnabled = true;
+            DisableCursor();
+            // not required, raylib handles this automatically
+            //SetMousePosition(GetScreenWidth()/2, GetScreenHeight()/2);
+
+            Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+            cameraYawRad = atan2f(forward.x, forward.z);
+            cameraPitchRad = asinf(Clamp(forward.y, -1.0f, 1.0f));
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+            freelookEnabled = false;
+            EnableCursor();
+        }
+
+        if (freelookEnabled) {
+            Vector2 md = GetMouseDelta();
+            const float mouseRadPerPixel = CAMERA_ROTATION_SPEED*DEG2RAD;
+
+            cameraYawRad += -md.x * mouseRadPerPixel;
+            cameraPitchRad += -md.y * mouseRadPerPixel;
+
+            const float maxPitch = 89.0f*DEG2RAD;
+            cameraPitchRad = Clamp(cameraPitchRad, -maxPitch, maxPitch);
+
+            float dist = Vector3Distance(camera.position, camera.target);
+            Vector3 forward = {
+                sinf(cameraYawRad) * cosf(cameraPitchRad),
+                sinf(cameraPitchRad),
+                cosf(cameraYawRad) * cosf(cameraPitchRad)
+            };
+            forward = Vector3Normalize(forward);
+            camera.target = Vector3Add(camera.position, Vector3Scale(forward, dist));
+
+            // Keep the mouse centered while freelook is active
+            // not required, raylib handles this automatically
+            //SetMousePosition(GetScreenWidth()/2, GetScreenHeight()/2);
+        }
+
         // Mouse wheel zoom
         float wheelMove = GetMouseWheelMove();
         if (wheelMove != 0) {
@@ -188,6 +236,10 @@ public:
                 ATTRACTOR_CENTER.z + 50.0f 
             };
             camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+
+            Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+            cameraYawRad = atan2f(forward.x, forward.z);
+            cameraPitchRad = asinf(Clamp(forward.y, -1.0f, 1.0f));
         }
     }
     
@@ -220,7 +272,8 @@ public:
         DrawText("WASD/Arrows: Move camera", 10, 155, 16, LIGHTGRAY);
         DrawText("Mouse Wheel: Zoom in/out", 10, 175, 16, LIGHTGRAY);
         DrawText("SPACE/C: Move up/down", 10, 195, 16, LIGHTGRAY);
-        DrawText("R: Reset particles", 10, 215, 16, LIGHTGRAY);
+        DrawText("RMB (hold): Freelook", 10, 215, 16, LIGHTGRAY);
+        DrawText("R: Reset particles", 10, 235, 16, LIGHTGRAY);
         EndDrawing();
     }
     
