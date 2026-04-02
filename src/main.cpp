@@ -219,7 +219,7 @@ public:
         DrawText("Camera Controls:", 10, 130, 18, LIGHTGRAY);
         DrawText("WASD/Arrows: Move camera", 10, 155, 16, LIGHTGRAY);
         DrawText("Mouse Wheel: Zoom in/out", 10, 175, 16, LIGHTGRAY);
-        DrawText("Q/E: Move up/down", 10, 195, 16, LIGHTGRAY);
+        DrawText("SPACE/C: Move up/down", 10, 195, 16, LIGHTGRAY);
         DrawText("R: Reset particles", 10, 215, 16, LIGHTGRAY);
         EndDrawing();
     }
