@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <raymath.h>
 #include <vector>
 #include <cmath>
 
@@ -12,11 +13,16 @@ const float RHO = 28.0f;
 const float BETA = 8.0f / 3.0f;
 
 // Simulation parameters
-const float DT = 0.01f;           // Time step for integration
-const int TRAIL_LENGTH = 500;     // Number of points in each particle's trail
-const int PARTICLE_COUNT = 5;     // Number of particles
-const float PARTICLE_RADIUS = 5.0f; // Visual size of particles
-const float SCALE = 10.0f;        // Scale factor for visualization
+const float DT = 0.01f;             // Time step for integration
+const int TRAIL_LENGTH = 500;       // Number of points in each particle's trail
+const int PARTICLE_COUNT = 5;       // Number of particles
+const float PARTICLE_RADIUS = 2.0f; // Visual size of particles
+const float SCALE = 10.0f;          // Scale factor for visualization
+
+// Camera control parameters
+const float CAMERA_MOVE_SPEED = 0.5f;
+const float CAMERA_ZOOM_SPEED = 2.0f;
+const float CAMERA_ROTATION_SPEED = 0.1f;
 
 // Colors for particles
 const Color PARTICLE_COLORS[] = {
@@ -117,11 +123,61 @@ public:
             particle.update();
         }
         
-        // Update camera to slowly rotate around the attractor
-        float radius = 60.0f;
-        camera.position.x = cosf(time * 0.1f) * radius;
-        camera.position.z = sinf(time * 0.1f) * radius;
-        camera.position.y = 30.0f + sinf(time * 0.05f) * 10.0f;
+        // Handle camera controls
+        handleCameraInput();
+    }
+    
+    void handleCameraInput() {
+        // Mouse wheel zoom
+        float wheelMove = GetMouseWheelMove();
+        if (wheelMove != 0) {
+            // Move camera forward/backward based on wheel
+            Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+            camera.position = Vector3Add(camera.position, Vector3Scale(forward, wheelMove * CAMERA_ZOOM_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(forward, wheelMove * CAMERA_ZOOM_SPEED));
+        }
+        
+        // WASD and arrow keys for panning
+        Vector3 right = Vector3Normalize(Vector3CrossProduct(Vector3Subtract(camera.target, camera.position), camera.up));
+        Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+        Vector3 up = camera.up;
+        
+        // Forward/backward (W/S or UP/DOWN arrows)
+        if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
+            camera.position = Vector3Add(camera.position, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+        }
+        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+        }
+        
+        // Left/right (A/D or LEFT/RIGHT arrows)
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(right, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(right, CAMERA_MOVE_SPEED));
+        }
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+            camera.position = Vector3Add(camera.position, Vector3Scale(right, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(right, CAMERA_MOVE_SPEED));
+        }
+        
+        // Up/down (Q/E or PAGEUP/PAGEDOWN)
+        if (IsKeyDown(KEY_Q) || IsKeyDown(KEY_PAGE_UP)) {
+            camera.position = Vector3Add(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
+        }
+        if (IsKeyDown(KEY_E) || IsKeyDown(KEY_PAGE_DOWN)) {
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
+        }
+        
+        // Reset camera view (R key)
+        if (IsKeyPressed(KEY_R)) {
+            camera.position = (Vector3){ 50.0f, 50.0f, 50.0f };
+            camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+            camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+        }
     }
     
     void draw() const {
@@ -147,6 +203,14 @@ public:
         DrawText("Particles follow chaotic trajectories", 10, 40, 18, LIGHTGRAY);
         DrawText(TextFormat("Time: %.2f", time), 10, 70, 18, LIGHTGRAY);
         DrawText(TextFormat("Particles: %d", PARTICLE_COUNT), 10, 100, 18, LIGHTGRAY);
+        
+        // Camera controls
+        DrawText("Camera Controls:", 10, 130, 18, LIGHTGRAY);
+        DrawText("WASD/Arrows: Move camera", 10, 155, 16, LIGHTGRAY);
+        DrawText("Mouse Wheel: Zoom in/out", 10, 175, 16, LIGHTGRAY);
+        DrawText("Q/E: Move up/down", 10, 195, 16, LIGHTGRAY);
+        DrawText("R: Reset camera view", 10, 215, 16, LIGHTGRAY);
+        
         DrawText("Press SPACE to reset particles", 10, WINDOW_HEIGHT - 30, 18, LIGHTGRAY);
         
         EndDrawing();
