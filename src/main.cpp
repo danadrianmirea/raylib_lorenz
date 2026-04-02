@@ -2,6 +2,8 @@
 #include <raymath.h>
 #include <vector>
 #include <cmath>
+#include <cstdlib>
+
 
 const int WINDOW_WIDTH = 960;
 const int WINDOW_HEIGHT = 540;
@@ -23,6 +25,13 @@ const float SCALE = 10.0f;              // Scale factor for visualization
 const float CAMERA_MOVE_SPEED = 0.5f;
 const float CAMERA_ZOOM_SPEED = 2.0f;
 const float CAMERA_ROTATION_SPEED = 0.1f;
+
+// UI parameters
+const int UI_FONT_SIZE = 18;
+const int UI_LINE_SPACING = 55;
+const int UI_TITLE_FONT_SIZE = 20;
+const int UI_SMALL_FONT_SIZE = 16;
+const int UI_START_Y = 10;
 
 // Lorenz attractor center (approximate center of the butterfly attractor)
 const Vector3 ATTRACTOR_CENTER = { 0.0f, 0.0f, 25.0f };
@@ -197,34 +206,39 @@ public:
         Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
         Vector3 up = camera.up;
         
+        float speedMultiplyer = 1.0f;
+        if(IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            speedMultiplyer *= 2.f;
+        }
+
         // Forward/backward (W/S or UP/DOWN arrows)
         if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
-            camera.position = Vector3Add(camera.position, Vector3Scale(forward, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Add(camera.target, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Add(camera.position, Vector3Scale(forward * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(forward * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
-            camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Subtract(camera.target, Vector3Scale(forward, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(forward * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(forward * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         
         // Left/right (A/D or LEFT/RIGHT arrows)
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-            camera.position = Vector3Subtract(camera.position, Vector3Scale(right, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Subtract(camera.target, Vector3Scale(right, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(right * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(right * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-            camera.position = Vector3Add(camera.position, Vector3Scale(right, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Add(camera.target, Vector3Scale(right, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Add(camera.position, Vector3Scale(right * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(right * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         
         // Up/down (SPACE/C or PAGEUP/PAGEDOWN)
         if (IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_PAGE_UP)) {
-            camera.position = Vector3Add(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Add(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Add(camera.position, Vector3Scale(up * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Add(camera.target, Vector3Scale(up * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         if (IsKeyDown(KEY_C) || IsKeyDown(KEY_PAGE_DOWN)) {
-            camera.position = Vector3Subtract(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
-            camera.target = Vector3Subtract(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
+            camera.position = Vector3Subtract(camera.position, Vector3Scale(up * speedMultiplyer, CAMERA_MOVE_SPEED));
+            camera.target = Vector3Subtract(camera.target, Vector3Scale(up * speedMultiplyer, CAMERA_MOVE_SPEED));
         }
         
         // Reset camera view (R key)
@@ -262,18 +276,18 @@ public:
         EndMode3D();
         
         // Draw UI information
-        DrawText("Lorenz Attractor Simulation", 10, 10, 20, WHITE);
-        DrawText("Particles follow chaotic trajectories", 10, 40, 18, LIGHTGRAY);
-        DrawText(TextFormat("Time: %.2f", time), 10, 70, 18, LIGHTGRAY);
-        DrawText(TextFormat("Particles: %d", PARTICLE_COUNT), 10, 100, 18, LIGHTGRAY);
+        DrawText("Lorenz Attractor Simulation", 10, UI_START_Y, UI_TITLE_FONT_SIZE, WHITE);
+        DrawText("Particles follow chaotic trajectories", 10, UI_START_Y + UI_LINE_SPACING, UI_FONT_SIZE, LIGHTGRAY);
+        DrawText(TextFormat("Time: %.2f", time), 10, UI_START_Y + 2 * UI_LINE_SPACING, UI_FONT_SIZE, LIGHTGRAY);
+        DrawText(TextFormat("Particles: %d", PARTICLE_COUNT), 10, UI_START_Y + 3 * UI_LINE_SPACING, UI_FONT_SIZE, LIGHTGRAY);
         
         // Camera controls
-        DrawText("Camera Controls:", 10, 130, 18, LIGHTGRAY);
-        DrawText("WASD/Arrows: Move camera", 10, 155, 16, LIGHTGRAY);
-        DrawText("Mouse Wheel: Zoom in/out", 10, 175, 16, LIGHTGRAY);
-        DrawText("SPACE/C: Move up/down", 10, 195, 16, LIGHTGRAY);
-        DrawText("RMB (hold): Freelook", 10, 215, 16, LIGHTGRAY);
-        DrawText("R: Reset particles", 10, 235, 16, LIGHTGRAY);
+        DrawText("Camera Controls:", 10, UI_START_Y + 4 * UI_LINE_SPACING, UI_FONT_SIZE, LIGHTGRAY);
+        DrawText("WASD/Arrows: Move camera", 10, UI_START_Y + 4 * UI_LINE_SPACING + UI_LINE_SPACING / 2, UI_SMALL_FONT_SIZE, LIGHTGRAY);
+        DrawText("Mouse Wheel: Zoom in/out", 10, UI_START_Y + 4 * UI_LINE_SPACING + UI_LINE_SPACING, UI_SMALL_FONT_SIZE, LIGHTGRAY);
+        DrawText("SPACE/C: Move up/down", 10, UI_START_Y + 4 * UI_LINE_SPACING + 3 * UI_LINE_SPACING / 2, UI_SMALL_FONT_SIZE, LIGHTGRAY);
+        DrawText("RMB (hold): Freelook", 10, UI_START_Y + 4 * UI_LINE_SPACING + 2 * UI_LINE_SPACING, UI_SMALL_FONT_SIZE, LIGHTGRAY);
+        DrawText("R: Reset particles", 10, UI_START_Y + 4 * UI_LINE_SPACING + 5 * UI_LINE_SPACING / 2, UI_SMALL_FONT_SIZE, LIGHTGRAY);
         EndDrawing();
     }
     
