@@ -170,11 +170,11 @@ public:
         }
         
         // Up/down (Q/E or PAGEUP/PAGEDOWN)
-        if (IsKeyDown(KEY_Q) || IsKeyDown(KEY_PAGE_UP)) {
+        if (IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_PAGE_UP)) {
             camera.position = Vector3Add(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
             camera.target = Vector3Add(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
         }
-        if (IsKeyDown(KEY_E) || IsKeyDown(KEY_PAGE_DOWN)) {
+        if (IsKeyDown(KEY_C) || IsKeyDown(KEY_PAGE_DOWN)) {
             camera.position = Vector3Subtract(camera.position, Vector3Scale(up, CAMERA_MOVE_SPEED));
             camera.target = Vector3Subtract(camera.target, Vector3Scale(up, CAMERA_MOVE_SPEED));
         }
@@ -220,10 +220,7 @@ public:
         DrawText("WASD/Arrows: Move camera", 10, 155, 16, LIGHTGRAY);
         DrawText("Mouse Wheel: Zoom in/out", 10, 175, 16, LIGHTGRAY);
         DrawText("Q/E: Move up/down", 10, 195, 16, LIGHTGRAY);
-        DrawText("R: Reset camera view", 10, 215, 16, LIGHTGRAY);
-        
-        DrawText("Press SPACE to reset particles", 10, WINDOW_HEIGHT - 30, 18, LIGHTGRAY);
-        
+        DrawText("R: Reset particles", 10, 215, 16, LIGHTGRAY);
         EndDrawing();
     }
     
@@ -255,7 +252,7 @@ int main() {
         simulation.update();
         
         // Handle input
-        if (IsKeyPressed(KEY_SPACE)) {
+        if (IsKeyPressed(KEY_R)) {
             simulation.resetParticles();
         }
         
